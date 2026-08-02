@@ -1,0 +1,148 @@
+import { useState } from 'react';
+import type { AppState } from '../state';
+import {
+  applyImport,
+  exportData,
+  importSummary,
+  validateImport,
+  wipeAll,
+  type ExportBlob,
+} from '../lib/storage';
+
+export default function Settings({ app }: { app: AppState }) {
+  const [note, setNote] = useState<string | null>(null);
+  const [importText, setImportText] = useState('');
+  const [pendingImport, setPendingImport] = useState<ExportBlob | null>(null);
+  const [resetText, setResetText] = useState('');
+  const [showReset, setShowReset] = useState(false);
+
+  async function onExport() {
+    const json = exportData();
+    const cards = app.cards.length;
+    try {
+      await navigator.clipboard.writeText(json);
+      setNote(`Copied to clipboard. ${json.length} bytes, ${cards} cards.`);
+    } catch {
+      // clipboard can fail outside secure contexts; show the payload instead
+      setImportText(json);
+      setNote(`Clipboard unavailable. Export shown below. ${json.length} bytes, ${cards} cards.`);
+    }
+  }
+
+  function onValidateImport() {
+    setNote(null);
+    try {
+      const blob = validateImport(importText);
+      setPendingImport(blob);
+    } catch (e) {
+      setNote(e instanceof Error ? e.message : 'Invalid import.');
+    }
+  }
+
+  function onConfirmImport() {
+    if (!pendingImport) return;
+    applyImport(pendingImport);
+    app.reloadAll();
+    setPendingImport(null);
+    setImportText('');
+    setNote('Import applied.');
+  }
+
+  function onReset() {
+    if (resetText !== 'reset') return;
+    wipeAll();
+    app.reloadAll();
+    setShowReset(false);
+    setResetText('');
+    setNote('Storage cleared.');
+  }
+
+  const summary = pendingImport ? importSummary(pendingImport) : null;
+
+  return (
+    <div className="screen">
+      <div className="screen-title">Settings</div>
+      <div className="form">
+        <div>
+          <label>Data</label>
+          <button className="btn" onClick={onExport}>
+            Export to clipboard
+          </button>
+        </div>
+
+        <div>
+          <label>Import (paste JSON)</label>
+          <textarea
+            rows={4}
+            value={importText}
+            onChange={(e) => {
+              setImportText(e.target.value);
+              setPendingImport(null);
+            }}
+            placeholder="Paste a RELOAD export here"
+          />
+          {importText.trim() && !pendingImport && (
+            <div style={{ marginTop: 6 }}>
+              <button className="btn" onClick={onValidateImport}>
+                Validate
+              </button>
+            </div>
+          )}
+          {summary && (
+            <div className="parse-note" style={{ marginTop: 8 }}>
+              <span>
+                will replace {summary.replacesCards} cards and {summary.replacesThreads} threads
+                with {summary.cards} cards, {summary.threads} threads, {summary.sessions} session
+                logs. continue?
+              </span>
+              <button onClick={onConfirmImport}>apply</button>
+              <button onClick={() => setPendingImport(null)}>cancel</button>
+            </div>
+          )}
+        </div>
+
+        <div>
+          <label>Anthropic API key (optional, for capture parsing)</label>
+          <input
+            type="password"
+            value={app.settings.apiKey ?? ''}
+            onChange={(e) =>
+              app.setSettings((s) => ({ ...s, apiKey: e.target.value.trim() || null }))
+            }
+            placeholder="sk-ant-…  leave empty to parse locally"
+          />
+        </div>
+
+        <StatsTable app={app} />
+
+        <div>
+          <label>Reset</label>
+          {!showReset ? (
+            <button className="btn danger" onClick={() => setShowReset(true)}>
+              Reset all data…
+            </button>
+          ) : (
+            <div style={{ display: 'flex', gap: 8 }}>
+              <input
+                value={resetText}
+                onChange={(e) => setResetText(e.target.value)}
+                placeholder="type reset to confirm"
+              />
+              <button className="btn danger" onClick={onReset} disabled={resetText !== 'reset'}>
+                Wipe
+              </button>
+            </div>
+          )}
+        </div>
+
+        {note && <div className="parse-note">{note}</div>}
+      </div>
+    </div>
+  );
+}
+
+// Filled in by the instrumentation phase; placeholder keeps Settings complete.
+function StatsTable({ app }: { app: AppState }) {
+  void app;
+  return null;
+}
