@@ -4,6 +4,7 @@ import Settings from './screens/Settings';
 import Threads from './screens/Threads';
 import Capture, { type Toast } from './screens/Capture';
 import Now from './screens/Now';
+import Waiting from './screens/Waiting';
 import type { Card, ContextPlace, Minutes } from './lib/types';
 import { MINUTES } from './lib/types';
 
@@ -110,9 +111,7 @@ export default function App() {
       ) : screen === 'threads' ? (
         <Threads app={app} />
       ) : screen === 'waiting' ? (
-        <div className="screen">
-          <div className="empty">Waiting screen arrives in a later phase.</div>
-        </div>
+        <Waiting app={app} />
       ) : (
         <Now
           app={app}
