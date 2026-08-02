@@ -133,6 +133,35 @@ export default function App() {
         />
       )}
 
+      {overlay?.type === 'help' && (
+        <div className="overlay" onClick={() => setOverlay(null)}>
+          <div className="panel">
+            <h2>Keys</h2>
+            <div className="menu-list" style={{ fontSize: 13 }}>
+              {(
+                [
+                  ['1–5', 'pick 2 / 5 / 15 / 30 / 60 minutes'],
+                  ['D', 'done'],
+                  ['S', 'snooze'],
+                  ['N / space', 'skip to next card'],
+                  ['E', 'edit current card'],
+                  ['C', 'capture'],
+                  ['W', 'waiting'],
+                  ['T', 'threads'],
+                  [',', 'settings'],
+                  ['esc', 'back, or clear to the picker'],
+                ] as const
+              ).map(([k, desc]) => (
+                <div key={k} className="row" style={{ padding: '6px 0' }}>
+                  <span className="key-hint">{k}</span>
+                  <span className="dim">{desc}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {toast && (
         <div className="parse-note" style={{ padding: '4px 0' }}>
           <span>{toast.text}</span>
