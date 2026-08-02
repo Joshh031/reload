@@ -5,11 +5,10 @@ justified here. Each entry states the decision and the reason, nothing else.
 
 ## Repo placement
 
-The brief names repo `Joshh031/reload`, but this session is scoped to
-`Joshh031/battleplan-next` with a dedicated branch (`claude/reload-app-build-q3y190`)
-created for this build. RELOAD is built at the repo root **on that branch only**;
-`master` still contains the battleplan app untouched. If a separate `reload`
-repo is preferred, this branch's tree can be pushed there as-is.
+Built in a Claude session originally scoped to `Joshh031/battleplan-next`
+(branch `claude/reload-app-build-q3y190`), then moved to this standalone
+`reload` repo with a clean history — the nine phase commits only, no
+battleplan ancestry.
 
 ## Dependencies
 
