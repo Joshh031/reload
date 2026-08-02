@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { AppState } from '../state';
+import { computeStats } from '../lib/stats';
 import {
   applyImport,
   exportData,
@@ -141,8 +142,46 @@ export default function Settings({ app }: { app: AppState }) {
   );
 }
 
-// Filled in by the instrumentation phase; placeholder keeps Settings complete.
 function StatsTable({ app }: { app: AppState }) {
-  void app;
-  return null;
+  const s = computeStats(app.sessions, app.cards, app.threads, app.settings);
+  return (
+    <div>
+      <label>Usage</label>
+      <div className="pass-condition">
+        pass condition: still opening this in week eight.
+      </div>
+      <table className="stats">
+        <tbody>
+          <tr>
+            <td>Days opened</td>
+            <td>
+              {s.daysOpened} / {s.daysSinceInstall}
+            </td>
+          </tr>
+          <tr>
+            <td>Current streak</td>
+            <td>{s.streak}d</td>
+          </tr>
+          <tr>
+            <td>Cards completed</td>
+            <td>
+              {s.completedTotal} · {s.completedPerWeek.toFixed(1)}/wk
+            </td>
+          </tr>
+          <tr>
+            <td>Skip rate</td>
+            <td>{s.skipRate === null ? '—' : `${Math.round(s.skipRate * 100)}%`}</td>
+          </tr>
+          <tr>
+            <td>Median seconds to action</td>
+            <td>{s.medianSecondsToAction === null ? '—' : s.medianSecondsToAction.toFixed(1)}</td>
+          </tr>
+          <tr>
+            <td>Threads idle 14 days</td>
+            <td>{s.starvedThreads.length ? s.starvedThreads.join(', ') : 'none'}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  );
 }
