@@ -2,6 +2,10 @@
 // Bump on every deploy that touches deployed files.
 const CACHE_VERSION = 'reload-v1';
 
+// Replaced at build time by scripts/inject-sw.mjs with the hashed dist assets,
+// so the full app works offline from the very first visit.
+const BUILD_ASSETS = [];
+
 const SHELL = [
   '/',
   '/manifest.webmanifest',
@@ -18,7 +22,7 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches
       .open(CACHE_VERSION)
-      .then((cache) => cache.addAll(SHELL))
+      .then((cache) => cache.addAll(SHELL.concat(BUILD_ASSETS)))
       .then(() => self.skipWaiting())
   );
 });
@@ -51,11 +55,13 @@ self.addEventListener('fetch', (event) => {
         return response;
       })
       .catch(async () => {
-        const cached = await caches.match(request);
+        // ignoreVary: module scripts request with CORS headers that differ
+        // from the install-time fetch; a Vary header must not defeat the match
+        const cached = await caches.match(request, { ignoreVary: true });
         if (cached) return cached;
         // SPA navigation fallback
         if (request.mode === 'navigate') {
-          const shell = await caches.match('/');
+          const shell = await caches.match('/', { ignoreVary: true });
           if (shell) return shell;
         }
         return new Response('offline', { status: 503 });

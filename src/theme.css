@@ -128,11 +128,6 @@ select:focus {
   color: var(--warn);
 }
 
-.hairline {
-  border: 0;
-  border-top: 1px solid var(--rule);
-}
-
 .btn {
   font-family: var(--mono);
   font-size: 12px;
@@ -550,8 +545,4 @@ select:focus {
   color: var(--signal);
   font-family: var(--mono);
   font-size: 11px;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  /* the single sanctioned transition: none. Done. is a swap, not an animation */
 }

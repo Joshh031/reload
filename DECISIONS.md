@@ -72,6 +72,14 @@ Tomorrow = next local midnight (visible again on any session tomorrow).
 Next week = +7 days at next midnight. "Pick a date" uses a plain date input;
 the card returns at local midnight of the chosen day.
 
+## Skip suppression scope
+
+"Skipped in the current session" is scoped to one picker selection: skips
+reset when the picker returns (after Done, or Esc). Within a viewing session a
+skipped card never immediately returns; across sessions it competes again
+unpenalised, which is what "without penalising the skipped one heavily" asks
+for. An app-lifetime scope could exhaust a small deck into a false empty state.
+
 ## Stats definitions
 
 - Days opened: distinct local days the app booted, stored in settings.
