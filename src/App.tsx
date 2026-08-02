@@ -3,7 +3,8 @@ import { useAppState } from './state';
 import Settings from './screens/Settings';
 import Threads from './screens/Threads';
 import Capture, { type Toast } from './screens/Capture';
-import type { Card, Minutes } from './lib/types';
+import Now from './screens/Now';
+import type { Card, ContextPlace, Minutes } from './lib/types';
 import { MINUTES } from './lib/types';
 
 type Screen = 'now' | 'waiting' | 'threads' | 'settings';
@@ -22,6 +23,7 @@ export default function App() {
   const [screen, setScreen] = useState<Screen>('now');
   const [overlay, setOverlay] = useState<Overlay>(null);
   const [toast, setToast] = useState<Toast | null>(null);
+  const [mode, setMode] = useState<ContextPlace>('desk');
   const [sessionMinutes, setSessionMinutes] = useState<Minutes | null>(null);
   const nowRef = useRef<NowHandlers | null>(null);
   const toastTimer = useRef<number | undefined>(undefined);
@@ -61,6 +63,8 @@ export default function App() {
       }
       switch (e.key.toLowerCase()) {
         case 'c':
+          // preventDefault so the keystroke doesn't land in the autofocused input
+          e.preventDefault();
           setOverlay({ type: 'capture' });
           break;
         case 'w':
@@ -110,9 +114,15 @@ export default function App() {
           <div className="empty">Waiting screen arrives in a later phase.</div>
         </div>
       ) : (
-        <div className="screen">
-          <div className="empty">NOW screen arrives in a later phase. Press C to capture.</div>
-        </div>
+        <Now
+          app={app}
+          mode={mode}
+          setMode={setMode}
+          minutes={sessionMinutes}
+          setMinutes={setSessionMinutes}
+          onEdit={(card) => setOverlay({ type: 'capture', card })}
+          handlers={nowRef}
+        />
       )}
 
       {overlay?.type === 'capture' && (
