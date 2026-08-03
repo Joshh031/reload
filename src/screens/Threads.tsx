@@ -28,9 +28,31 @@ function nextHue(threads: Thread[]): number {
 
 export default function Threads({ app }: { app: AppState }) {
   const [name, setName] = useState('');
+  const [reviewThreadId, setReviewThreadId] = useState<string | null>(null);
+  const [reviewIdx, setReviewIdx] = useState(0);
 
   const active = app.threads.filter((t) => t.status === 'active');
   const parked = app.threads.filter((t) => t.status === 'parked');
+
+  const reviewThread = app.threads.find((t) => t.id === reviewThreadId) ?? null;
+  const reviewCards = reviewThread
+    ? app.cards
+        .filter((c) => c.threadId === reviewThread.id && c.status === 'open')
+        .sort((a, b) => a.createdAt - b.createdAt)
+    : [];
+  const reviewCard = reviewCards[Math.min(reviewIdx, Math.max(0, reviewCards.length - 1))];
+
+  function dropCard(id: string) {
+    app.setCards((cards) =>
+      cards.map((c) =>
+        c.id === id
+          ? { ...c, status: 'dropped', lastTouchedAt: Date.now(), updatedAt: Date.now() }
+          : c
+      )
+    );
+    if (reviewCards.length <= 1) setReviewThreadId(null);
+    else setReviewIdx((i) => Math.min(i, reviewCards.length - 2));
+  }
 
   function togglePark(id: string) {
     app.setThreads((ts) =>
@@ -68,11 +90,21 @@ export default function Threads({ app }: { app: AppState }) {
     const days = daysSinceLastCompletion(app, t);
     return (
       <div key={t.id} className={`row${t.status === 'parked' ? ' parked' : ''}`}>
-        <div className="grow">
+        <div
+          className="grow"
+          style={{ cursor: open > 0 ? 'pointer' : 'default' }}
+          onClick={() => {
+            if (open > 0) {
+              setReviewThreadId(t.id);
+              setReviewIdx(0);
+            }
+          }}
+        >
           <span className="thread-dot" style={{ background: `hsl(${t.hue} 45% 55%)` }} />
           {t.name}
           <div className="sub">
             {open} open · {days === null ? 'no completions yet' : `last completed ${days}d ago`}
+            {open > 0 ? ' · tap to review' : ''}
           </div>
         </div>
         <button className="btn" onClick={() => togglePark(t.id)}>
@@ -108,6 +140,52 @@ export default function Threads({ app }: { app: AppState }) {
           </button>
         </div>
       </div>
+
+      {reviewThread && reviewCard && (
+        <div
+          className="overlay"
+          onKeyDown={(e) => {
+            e.stopPropagation();
+            if (e.key === 'Escape') setReviewThreadId(null);
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setReviewThreadId(null);
+          }}
+        >
+          <div className="panel">
+            <h2>{reviewThread.name}</h2>
+            <div style={{ fontSize: 18, fontWeight: 500, marginBottom: 10 }}>
+              {reviewCard.action}
+            </div>
+            {reviewCard.reload && (
+              <div className="dim" style={{ fontSize: 13, marginBottom: 10 }}>
+                {reviewCard.reload}
+              </div>
+            )}
+            <div className="parse-note" style={{ marginBottom: 12 }}>
+              {reviewCard.minutes} min · {reviewCard.place}
+              {reviewCard.priority ? ` · p${reviewCard.priority}` : ''}
+              {reviewCard.waitingOn ? ` · waiting on ${reviewCard.waitingOn}` : ''}
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              {reviewCards.length > 1 && (
+                <button
+                  className="btn"
+                  onClick={() => setReviewIdx((i) => (i + 1) % reviewCards.length)}
+                >
+                  Next
+                </button>
+              )}
+              <button className="btn danger" onClick={() => dropCard(reviewCard.id)}>
+                Drop
+              </button>
+              <button className="btn" onClick={() => setReviewThreadId(null)}>
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

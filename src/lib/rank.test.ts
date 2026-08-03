@@ -53,9 +53,13 @@ describe('hard filters', () => {
     expect(out[0].status).toBe('open');
   });
 
-  it('excludes every card of a parked thread', () => {
-    const t = [thread(), thread({ id: 'th2', status: 'parked' })];
-    const cards = [card(), card({ threadId: 'th2' })];
+  it('excludes every card of a parked or deleted thread', () => {
+    const t = [
+      thread(),
+      thread({ id: 'th2', status: 'parked' }),
+      thread({ id: 'th3', status: 'deleted' }),
+    ];
+    const cards = [card(), card({ threadId: 'th2' }), card({ threadId: 'th3' })];
     const out = rank(cards, t, ctx());
     expect(out.map((c) => c.threadId)).toEqual(['th1']);
   });

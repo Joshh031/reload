@@ -49,7 +49,7 @@ export function passesFilters(
 ): boolean {
   if (card.status !== 'open') return false;
   const thread = threadsById.get(card.threadId);
-  if (!thread || thread.status === 'parked') return false;
+  if (!thread || thread.status !== 'active') return false;
   if (card.snoozeUntil !== null && card.snoozeUntil > ctx.now) return false;
   if (card.minutes > ctx.minutes) return false;
   if (card.place !== 'anywhere' && card.place !== ctx.place) return false;

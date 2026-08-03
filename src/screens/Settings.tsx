@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { AppState } from '../state';
 import { computeStats } from '../lib/stats';
 import { newSyncKey, syncNow } from '../lib/sync';
+import { SEED_ACTIONS, THREAD_NAMES } from '../lib/seedData';
 import {
   applyImport,
   exportData,
@@ -50,6 +51,38 @@ export default function Settings({ app }: { app: AppState }) {
     setNote('Import applied.');
   }
 
+  // Tombstones the sample content: demo cards -> dropped, demo threads with
+  // no real cards -> deleted. Tombstones sync, so the junk stays gone on
+  // every device instead of being resurrected by the next merge.
+  function onRemoveDemo() {
+    const now = Date.now();
+    const cards = app.cards.map((c) =>
+      SEED_ACTIONS.has(c.action) && c.status !== 'dropped'
+        ? { ...c, status: 'dropped' as const, lastTouchedAt: now, updatedAt: now }
+        : c
+    );
+    const demoCount = cards.filter(
+      (c, i) => c !== app.cards[i]
+    ).length;
+    const hasRealCards = (threadId: string) =>
+      cards.some((c) => c.threadId === threadId && !SEED_ACTIONS.has(c.action));
+    const deletable = new Set(
+      app.threads
+        .filter(
+          (t) =>
+            t.status !== 'deleted' && THREAD_NAMES.includes(t.name) && !hasRealCards(t.id)
+        )
+        .map((t) => t.id)
+    );
+    app.setCards(() => cards);
+    app.setThreads((ts) =>
+      ts.map((t) =>
+        deletable.has(t.id) ? { ...t, status: 'deleted' as const, updatedAt: now } : t
+      )
+    );
+    setNote(`Removed ${demoCount} demo cards and ${deletable.size} demo threads.`);
+  }
+
   function onReset() {
     if (resetText !== 'reset') return;
     wipeAll();
@@ -67,9 +100,14 @@ export default function Settings({ app }: { app: AppState }) {
       <div className="form">
         <div>
           <label>Data</label>
-          <button className="btn" onClick={onExport}>
-            Export to clipboard
-          </button>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <button className="btn" onClick={onExport}>
+              Export to clipboard
+            </button>
+            <button className="btn" onClick={onRemoveDemo}>
+              Remove demo data
+            </button>
+          </div>
         </div>
 
         <div>

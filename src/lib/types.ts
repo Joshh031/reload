@@ -17,7 +17,9 @@ export interface Thread {
   id: string;
   name: string;
   hue: number; // 0-360, used for a single 3px edge marker
-  status: 'active' | 'parked';
+  // 'deleted' is a tombstone: hidden everywhere but kept so the removal
+  // propagates through sync instead of being resurrected by a merge.
+  status: 'active' | 'parked' | 'deleted';
   createdAt: number;
   updatedAt: number; // sync revision: bumped on every mutation
 }
