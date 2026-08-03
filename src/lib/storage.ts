@@ -1,7 +1,7 @@
 import type { Card, SessionLog, Settings, Thread } from './types';
 import { SEED_ACTIONS, THREAD_NAMES } from './seedData';
 
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3;
 
 export const KEYS = {
   threads: 'reload.threads',
@@ -78,6 +78,7 @@ export function defaultSettings(): Settings {
     openedDays: [],
     apiKey: null,
     lastThreadId: null,
+    syncKey: null,
   };
 }
 
@@ -109,10 +110,27 @@ const migrations: Array<() => void> = [
     saveCards(cards);
     saveThreads(threads);
   },
+  // 2 -> 3: sync support. Every thread and card gains an updatedAt revision;
+  // seeded from what the record already knows about its own history.
+  () => {
+    saveThreads(
+      loadThreads().map((t) => ({ ...t, updatedAt: t.updatedAt ?? t.createdAt }))
+    );
+    saveCards(
+      loadCards().map((c) => ({ ...c, updatedAt: c.updatedAt ?? c.lastTouchedAt }))
+    );
+  },
 ];
 
 export function migrate(): void {
   const raw = store.getItem(KEYS.schemaVersion);
+  // A truly fresh install has nothing to migrate: stamp and stop. Running the
+  // steps would write empty arrays into storage, which the seeder would then
+  // mistake for existing data.
+  if (raw === null && !hasAnyData()) {
+    store.setItem(KEYS.schemaVersion, String(SCHEMA_VERSION));
+    return;
+  }
   let version = raw === null ? 0 : Number(raw) || 0;
   if (version >= SCHEMA_VERSION) return;
   while (version < SCHEMA_VERSION) {

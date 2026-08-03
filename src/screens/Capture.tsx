@@ -79,6 +79,7 @@ export default function Capture({ app, editCard, onClose, onToast }: Props) {
                   : null,
                 lastNudged: waitingOn.trim() ? c.lastNudged : null,
                 lastTouchedAt: now,
+                updatedAt: now,
               }
             : c
         )
@@ -105,6 +106,7 @@ export default function Capture({ app, editCard, onClose, onToast }: Props) {
       snoozeUntil: null,
       createdAt: now,
       lastTouchedAt: now,
+      updatedAt: now,
     };
     app.setCards((cards) => [...cards, card]);
     app.setSettings((s) => ({ ...s, lastThreadId: threadId }));
@@ -128,6 +130,7 @@ export default function Capture({ app, editCard, onClose, onToast }: Props) {
                 waitingOn: p.waitingOn ?? c.waitingOn,
                 waitingSince: p.waitingOn ? now : c.waitingSince,
                 reload: p.reload ?? c.reload,
+                updatedAt: Date.now(),
               }
             : c
         )
@@ -291,7 +294,12 @@ export default function Capture({ app, editCard, onClose, onToast }: Props) {
                   app.setCards((cards) =>
                     cards.map((c) =>
                       c.id === editCard.id
-                        ? { ...c, status: 'dropped', lastTouchedAt: Date.now() }
+                        ? {
+                            ...c,
+                            status: 'dropped',
+                            lastTouchedAt: Date.now(),
+                            updatedAt: Date.now(),
+                          }
                         : c
                     )
                   );

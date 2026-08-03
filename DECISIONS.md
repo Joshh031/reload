@@ -88,6 +88,30 @@ for. An app-lifetime scope could exhaust a small deck into a false empty state.
 - "Threads with zero completions in 14 days" counts active threads only —
   parked threads are excluded by definition (they are admitted-idle).
 
+## Sync (schema v3) — user override of the v1 scope
+
+The brief excluded multi-device sync from v1; the owner overrode that after
+first use (phone capture + desk execution is the real workflow). Design kept
+deliberately small:
+
+- Transport is the Firebase Realtime Database REST API of the existing
+  `familyhub-d72f8` project (the battleplan pattern) via plain `fetch` —
+  still zero new dependencies, no SDK, no auth flow. The sync location is
+  `reload/{syncKey}`, where the key is a 128-bit random secret shared
+  between devices through Settings. Same trust model as battleplan: anyone
+  holding the key can read/write that path.
+- Convergence is a record-level last-write-wins merge on a dedicated
+  `updatedAt` revision (bumped on every mutation; `lastTouchedAt` keeps its
+  scoring meaning and is deliberately not bumped by snooze). Cards and
+  threads merge by id, session logs and opened-days union, so concurrent
+  edits on two devices both survive. Merge is commutative (unit-tested).
+- Triggers: boot, tab focus, reconnect, a 60s timer, and 2s after any local
+  mutation. No live socket — polling is enough for a one-person, two-device
+  workflow and keeps the app fully offline-tolerant; sync failures are
+  silent everywhere except the Settings screen.
+- RTDB strips nulls and empty arrays; `normalizePayload` restores the exact
+  shapes the types promise before merging.
+
 ## Schema v2 strips demo data in place
 
 Existing installs had seed data mixed with real entries. Migration 1→2

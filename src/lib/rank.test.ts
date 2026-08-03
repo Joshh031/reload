@@ -12,6 +12,7 @@ function thread(over: Partial<Thread> = {}): Thread {
     hue: 210,
     status: 'active',
     createdAt: NOW - 30 * DAY_MS,
+    updatedAt: NOW - 30 * DAY_MS,
     ...over,
   };
 }
@@ -35,6 +36,7 @@ function card(over: Partial<Card> = {}): Card {
     snoozeUntil: null,
     createdAt: NOW - DAY_MS,
     lastTouchedAt: NOW,
+    updatedAt: NOW,
     ...over,
   };
 }

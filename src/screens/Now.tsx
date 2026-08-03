@@ -107,7 +107,9 @@ export default function Now({ app, mode, setMode, minutes, setMinutes, onEdit, h
     const now = Date.now();
     app.setCards((cards) =>
       cards.map((c) =>
-        c.id === current.id ? { ...c, status: 'done', lastTouchedAt: now } : c
+        c.id === current.id
+          ? { ...c, status: 'done', lastTouchedAt: now, updatedAt: now }
+          : c
       )
     );
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -132,7 +134,9 @@ export default function Now({ app, mode, setMode, minutes, setMinutes, onEdit, h
     if (!current) return;
     logOutcome('snooze');
     app.setCards((cards) =>
-      cards.map((c) => (c.id === current.id ? { ...c, snoozeUntil: until } : c))
+      cards.map((c) =>
+        c.id === current.id ? { ...c, snoozeUntil: until, updatedAt: Date.now() } : c
+      )
     );
     setSnoozeOpen(false);
     setPickingDate(false);

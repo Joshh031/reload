@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { AppState } from '../state';
 import { computeStats } from '../lib/stats';
+import { newSyncKey, syncNow } from '../lib/sync';
 import {
   applyImport,
   exportData,
@@ -102,6 +103,8 @@ export default function Settings({ app }: { app: AppState }) {
           )}
         </div>
 
+        <SyncSection app={app} />
+
         <div>
           <label>Anthropic API key (optional, for capture parsing)</label>
           <input
@@ -137,6 +140,84 @@ export default function Settings({ app }: { app: AppState }) {
         </div>
 
         {note && <div className="parse-note">{note}</div>}
+      </div>
+    </div>
+  );
+}
+
+function SyncSection({ app }: { app: AppState }) {
+  const [joinKey, setJoinKey] = useState('');
+  const [status, setStatus] = useState<string | null>(null);
+  const key = app.settings.syncKey;
+
+  async function runSync(k: string) {
+    setStatus('syncing…');
+    try {
+      const result = await syncNow(k);
+      if (result === 'applied') app.reloadAll();
+      setStatus(`synced (${result}).`);
+    } catch (e) {
+      setStatus(e instanceof Error ? `sync failed: ${e.message}` : 'sync failed.');
+    }
+  }
+
+  function enable(k: string) {
+    const trimmed = k.trim();
+    if (!trimmed) return;
+    app.setSettings((s) => ({ ...s, syncKey: trimmed }));
+    setJoinKey('');
+    void runSync(trimmed);
+  }
+
+  if (!key) {
+    return (
+      <div>
+        <label>Sync (across devices)</label>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+          <button className="btn" onClick={() => enable(newSyncKey())}>
+            Enable sync — create key
+          </button>
+        </div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <input
+            value={joinKey}
+            onChange={(e) => setJoinKey(e.target.value)}
+            placeholder="or paste the key from your other device"
+          />
+          <button className="btn" disabled={!joinKey.trim()} onClick={() => enable(joinKey)}>
+            Join
+          </button>
+        </div>
+        {status && <div className="parse-note" style={{ marginTop: 6 }}>{status}</div>}
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <label>Sync (across devices)</label>
+      <div className="parse-note" style={{ marginBottom: 6, wordBreak: 'break-all' }}>
+        key: <span className="mono">{key}</span>
+        <button onClick={() => navigator.clipboard.writeText(key).catch(() => {})}>
+          copy
+        </button>
+      </div>
+      <div style={{ display: 'flex', gap: 8 }}>
+        <button className="btn" onClick={() => runSync(key)}>
+          Sync now
+        </button>
+        <button
+          className="btn"
+          onClick={() => {
+            app.setSettings((s) => ({ ...s, syncKey: null }));
+            setStatus('sync off. Data stays on this device and on the server.');
+          }}
+        >
+          Disable
+        </button>
+      </div>
+      <div className="parse-note" style={{ marginTop: 6 }}>
+        {status ?? 'enter the same key on each device. anyone with the key can read this data.'}
       </div>
     </div>
   );

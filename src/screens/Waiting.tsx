@@ -15,7 +15,9 @@ export default function Waiting({ app }: { app: AppState }) {
 
   function nudged(id: string) {
     app.setCards((cards) =>
-      cards.map((c) => (c.id === id ? { ...c, lastNudged: Date.now() } : c))
+      cards.map((c) =>
+        c.id === id ? { ...c, lastNudged: Date.now(), updatedAt: Date.now() } : c
+      )
     );
   }
 

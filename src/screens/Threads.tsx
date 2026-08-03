@@ -35,7 +35,13 @@ export default function Threads({ app }: { app: AppState }) {
   function togglePark(id: string) {
     app.setThreads((ts) =>
       ts.map((t) =>
-        t.id === id ? { ...t, status: t.status === 'parked' ? 'active' : 'parked' } : t
+        t.id === id
+          ? {
+              ...t,
+              status: t.status === 'parked' ? 'active' : 'parked',
+              updatedAt: Date.now(),
+            }
+          : t
       )
     );
   }
@@ -45,7 +51,14 @@ export default function Threads({ app }: { app: AppState }) {
     if (!trimmed) return;
     app.setThreads((ts) => [
       ...ts,
-      { id: newId(), name: trimmed, hue: nextHue(ts), status: 'active', createdAt: Date.now() },
+      {
+        id: newId(),
+        name: trimmed,
+        hue: nextHue(ts),
+        status: 'active',
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      },
     ]);
     setName('');
   }

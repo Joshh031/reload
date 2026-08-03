@@ -7,6 +7,7 @@ import Now from './screens/Now';
 import Waiting from './screens/Waiting';
 import type { Card, ContextPlace, Minutes } from './lib/types';
 import { MINUTES } from './lib/types';
+import { syncNow } from './lib/sync';
 
 type Screen = 'now' | 'waiting' | 'threads' | 'settings';
 type Overlay = { type: 'capture'; card?: Card } | { type: 'help' } | null;
@@ -36,6 +37,48 @@ export default function App() {
   }
 
   const overlayOpen = overlay !== null;
+
+  // Background sync: boot, tab focus, reconnect, and a slow timer. Silent —
+  // failures never interrupt; the Settings screen surfaces them on demand.
+  const syncKey = app.settings.syncKey;
+  const reloadAll = app.reloadAll;
+  useEffect(() => {
+    if (!syncKey) return;
+    let closed = false;
+    const run = () => {
+      syncNow(syncKey)
+        .then((r) => {
+          if (!closed && r === 'applied') reloadAll();
+        })
+        .catch(() => {});
+    };
+    run();
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') run();
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('online', run);
+    const timer = window.setInterval(run, 60000);
+    return () => {
+      closed = true;
+      document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('online', run);
+      window.clearInterval(timer);
+    };
+  }, [syncKey, reloadAll]);
+
+  // Push local mutations shortly after they happen.
+  useEffect(() => {
+    if (!syncKey) return;
+    const timer = window.setTimeout(() => {
+      syncNow(syncKey)
+        .then((r) => {
+          if (r === 'applied') reloadAll();
+        })
+        .catch(() => {});
+    }, 2000);
+    return () => window.clearTimeout(timer);
+  }, [syncKey, reloadAll, app.cards, app.threads, app.sessions]);
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {

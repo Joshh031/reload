@@ -37,6 +37,14 @@ describe('migrate', () => {
     expect(store.getItem(KEYS.schemaVersion)).toBe(String(SCHEMA_VERSION));
   });
 
+  it('leaves fresh storage untouched so the seeder still runs', () => {
+    migrate();
+    expect(store.getItem(KEYS.threads)).toBeNull();
+    expect(store.getItem(KEYS.cards)).toBeNull();
+    maybeSeed(false);
+    expect(loadThreads()).toHaveLength(9);
+  });
+
   it('is idempotent', () => {
     migrate();
     migrate();
@@ -55,6 +63,7 @@ describe('migration v2: demo-data removal', () => {
       hue: 10,
       status: 'active',
       createdAt: NOW,
+      updatedAt: NOW,
     };
     const userCard = (id: string, threadId: string): Card => ({
       id,
@@ -72,6 +81,7 @@ describe('migration v2: demo-data removal', () => {
       snoozeUntil: null,
       createdAt: NOW,
       lastTouchedAt: NOW,
+      updatedAt: NOW,
     });
     saveThreads([...threads, userThread]);
     saveCards([...cards, userCard('uc1', house.id), userCard('uc2', userThread.id)]);
@@ -116,6 +126,7 @@ describe('export / import round trip', () => {
       openedDays: ['2023-11-14'],
       apiKey: null,
       lastThreadId: threads[0].id,
+      syncKey: null,
     };
     saveThreads(threads);
     saveCards(cards);

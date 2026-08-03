@@ -10,6 +10,7 @@ export function buildSeed(now = Date.now()): { threads: Thread[]; cards: Card[] 
     hue: HUES[i],
     status: 'active',
     createdAt: now - 30 * DAY_MS,
+    updatedAt: now - 30 * DAY_MS,
   }));
   const cards: Card[] = [];
   for (const thread of threads) {
@@ -31,6 +32,7 @@ export function buildSeed(now = Date.now()): { threads: Thread[]; cards: Card[] 
         snoozeUntil: null,
         createdAt: created,
         lastTouchedAt: created,
+        updatedAt: created,
       });
     }
   }

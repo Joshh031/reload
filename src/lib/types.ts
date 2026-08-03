@@ -19,6 +19,7 @@ export interface Thread {
   hue: number; // 0-360, used for a single 3px edge marker
   status: 'active' | 'parked';
   createdAt: number;
+  updatedAt: number; // sync revision: bumped on every mutation
 }
 
 export interface Card {
@@ -36,7 +37,8 @@ export interface Card {
   status: 'open' | 'done' | 'dropped';
   snoozeUntil: number | null;
   createdAt: number;
-  lastTouchedAt: number;
+  lastTouchedAt: number; // feeds the staleness score (not bumped by snooze)
+  updatedAt: number; // sync revision: bumped on every mutation
 }
 
 export interface SessionLog {
@@ -54,6 +56,7 @@ export interface Settings {
   openedDays: string[]; // YYYY-MM-DD, local time, deduped
   apiKey: string | null; // Anthropic API key for the capture parse call
   lastThreadId: string | null; // default thread for capture
+  syncKey: string | null; // shared secret naming the sync location; null = off
 }
 
 export function newId(): string {
