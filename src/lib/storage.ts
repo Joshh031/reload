@@ -192,9 +192,12 @@ export function applyImport(blob: ExportBlob): void {
   migrate(); // bring an older export up to the current schema
 }
 
+// Reset leaves threads/cards as explicit empty arrays rather than removing the
+// keys: the seeder only fills truly-untouched storage, so a deliberate reset
+// stays empty on the next visit instead of resurrecting the demo data.
 export function wipeAll(): void {
-  store.removeItem(KEYS.threads);
-  store.removeItem(KEYS.cards);
+  saveThreads([]);
+  saveCards([]);
   store.removeItem(KEYS.sessions);
   store.removeItem(KEYS.settings);
   store.removeItem(KEYS.schemaVersion);

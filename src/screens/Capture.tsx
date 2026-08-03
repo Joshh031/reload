@@ -284,6 +284,23 @@ export default function Capture({ app, editCard, onClose, onToast }: Props) {
             <button className="btn" onClick={onClose}>
               Cancel
             </button>
+            {editCard && (
+              <button
+                className="btn danger"
+                onClick={() => {
+                  app.setCards((cards) =>
+                    cards.map((c) =>
+                      c.id === editCard.id
+                        ? { ...c, status: 'dropped', lastTouchedAt: Date.now() }
+                        : c
+                    )
+                  );
+                  onClose();
+                }}
+              >
+                Drop
+              </button>
+            )}
             <span className="parse-note" style={{ marginLeft: 'auto' }}>
               enter saves · esc closes
             </span>

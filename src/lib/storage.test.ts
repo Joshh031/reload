@@ -20,7 +20,7 @@ import {
   wipeAll,
   type StorageLike,
 } from './storage';
-import { buildSeed } from './seed';
+import { buildSeed, maybeSeed } from './seed';
 import type { SessionLog, Settings } from './types';
 
 let store: StorageLike;
@@ -108,6 +108,17 @@ describe('export / import round trip', () => {
     expect(() =>
       validateImport(JSON.stringify({ app: 'reload', schemaVersion: 1, threads: {} }))
     ).toThrow('Malformed export: missing arrays.');
+  });
+
+  it('a reset stays empty: the seeder does not refill wiped storage', () => {
+    migrate();
+    const { threads, cards } = buildSeed(1_700_000_000_000);
+    saveThreads(threads);
+    saveCards(cards);
+    wipeAll();
+    maybeSeed(false);
+    expect(loadThreads()).toEqual([]);
+    expect(loadCards()).toEqual([]);
   });
 
   it('never merges: import fully replaces existing data', () => {
