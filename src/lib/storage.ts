@@ -1,6 +1,7 @@
 import type { Card, SessionLog, Settings, Thread } from './types';
+import { SEED_ACTIONS, THREAD_NAMES } from './seedData';
 
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
 
 export const KEYS = {
   threads: 'reload.threads',
@@ -94,6 +95,20 @@ export function hasAnyData(): boolean {
 const migrations: Array<() => void> = [
   // 0 -> 1: initial schema. Nothing to transform; keys are created lazily.
   () => {},
+  // 1 -> 2: strip the demo data. Removes seed cards (matched by their exact
+  // action text) and seed threads that hold no user-created cards afterwards.
+  // Anything the user entered — including their own cards filed under a seed
+  // thread — survives. Fresh installs are stamped v2 before seeding runs, so
+  // first-load demo data is unaffected.
+  () => {
+    const cards = loadCards().filter((c) => !SEED_ACTIONS.has(c.action));
+    const usedThreadIds = new Set(cards.map((c) => c.threadId));
+    const threads = loadThreads().filter(
+      (t) => !THREAD_NAMES.includes(t.name) || usedThreadIds.has(t.id)
+    );
+    saveCards(cards);
+    saveThreads(threads);
+  },
 ];
 
 export function migrate(): void {

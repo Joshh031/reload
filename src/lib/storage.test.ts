@@ -21,7 +21,7 @@ import {
   type StorageLike,
 } from './storage';
 import { buildSeed, maybeSeed } from './seed';
-import type { SessionLog, Settings } from './types';
+import type { Card, SessionLog, Settings, Thread } from './types';
 
 let store: StorageLike;
 
@@ -41,6 +41,58 @@ describe('migrate', () => {
     migrate();
     migrate();
     expect(store.getItem(KEYS.schemaVersion)).toBe(String(SCHEMA_VERSION));
+  });
+});
+
+describe('migration v2: demo-data removal', () => {
+  it('strips seed cards and empty seed threads, keeps everything user-entered', () => {
+    const NOW = 1_700_000_000_000;
+    const { threads, cards } = buildSeed(NOW);
+    const house = threads.find((t) => t.name === 'House')!;
+    const userThread: Thread = {
+      id: 'u-thread',
+      name: 'My project',
+      hue: 10,
+      status: 'active',
+      createdAt: NOW,
+    };
+    const userCard = (id: string, threadId: string): Card => ({
+      id,
+      threadId,
+      action: `user task ${id}`,
+      reload: '',
+      minutes: 5,
+      place: 'desk',
+      priority: 0,
+      deadline: null,
+      waitingOn: null,
+      waitingSince: null,
+      lastNudged: null,
+      status: 'open',
+      snoozeUntil: null,
+      createdAt: NOW,
+      lastTouchedAt: NOW,
+    });
+    saveThreads([...threads, userThread]);
+    saveCards([...cards, userCard('uc1', house.id), userCard('uc2', userThread.id)]);
+    store.setItem(KEYS.schemaVersion, '1'); // simulate an existing v1 install
+
+    migrate();
+
+    expect(loadCards().map((c) => c.id).sort()).toEqual(['uc1', 'uc2']);
+    // House survives because a user card lives in it; other seed threads go.
+    expect(loadThreads().map((t) => t.name).sort()).toEqual(['House', 'My project']);
+    expect(store.getItem(KEYS.schemaVersion)).toBe(String(SCHEMA_VERSION));
+  });
+
+  it('leaves a fresh post-seed install untouched (stamped before seeding)', () => {
+    migrate(); // fresh install stamps v2 first
+    const { threads, cards } = buildSeed(1_700_000_000_000);
+    saveThreads(threads);
+    saveCards(cards);
+    migrate(); // boot again — already v2, no cleanup
+    expect(loadThreads()).toHaveLength(9);
+    expect(loadCards()).toHaveLength(cards.length);
   });
 });
 

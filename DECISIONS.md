@@ -88,6 +88,15 @@ for. An app-lifetime scope could exhaust a small deck into a false empty state.
 - "Threads with zero completions in 14 days" counts active threads only —
   parked threads are excluded by definition (they are admitted-idle).
 
+## Schema v2 strips demo data in place
+
+Existing installs had seed data mixed with real entries. Migration 1→2
+removes seed cards by their exact action text and then removes seed threads
+that no longer hold any cards, so user-entered cards — including ones filed
+under a seed thread like "House" — survive. Fresh installs are stamped v2
+before the seeder runs, so first-load demo data still appears for new users
+(and is removable with Reset or `?empty`).
+
 ## Reset does not reseed; Drop lives in Edit
 
 Reset writes explicit empty arrays instead of deleting the storage keys, so
