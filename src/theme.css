@@ -572,3 +572,73 @@ select:focus {
   font-family: var(--mono);
   font-size: 11px;
 }
+
+/* ---- touch devices: same quiet look, finger-sized targets ---- */
+
+@media (pointer: coarse) {
+  .footer {
+    gap: 0;
+    justify-content: space-between;
+    padding: 10px 0 calc(12px + env(safe-area-inset-bottom));
+  }
+
+  .footer .spacer {
+    display: none;
+  }
+
+  .footer button {
+    font-size: 13px;
+    padding: 12px 5px;
+  }
+
+  .btn {
+    font-size: 14px;
+    padding: 11px 14px;
+  }
+
+  .card-actions {
+    gap: 10px;
+  }
+
+  .card-actions .btn {
+    flex: 1;
+    text-align: center;
+  }
+
+  .picker .minutes {
+    gap: 8px;
+  }
+
+  .picker .minutes button {
+    width: 62px;
+    height: 60px;
+  }
+
+  .picker .modes button {
+    padding: 10px 12px;
+  }
+
+  .session-bar button {
+    font-size: 12px;
+    padding: 10px 0 10px 18px;
+  }
+
+  .row .btn {
+    padding: 9px 12px;
+  }
+
+  .menu-list button {
+    padding: 14px 6px;
+  }
+
+  input,
+  textarea,
+  select {
+    padding: 10px;
+    font-size: 16px; /* prevents iOS zoom-on-focus */
+  }
+
+  .seg button {
+    padding: 10px 0;
+  }
+}
