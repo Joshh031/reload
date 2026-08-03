@@ -39,7 +39,8 @@ export function buildSeed(now = Date.now()): { threads: Thread[]; cards: Card[] 
   return { threads, cards };
 }
 
-// Seeds only when storage is empty; skippable with ?empty.
+// Seeds only when storage is empty, and only when explicitly requested
+// (?demo). Real devices start clean.
 export function maybeSeed(skip: boolean): void {
   if (skip || hasAnyData()) return;
   const { threads, cards } = buildSeed();

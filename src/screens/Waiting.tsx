@@ -21,6 +21,16 @@ export default function Waiting({ app }: { app: AppState }) {
     );
   }
 
+  function drop(id: string) {
+    app.setCards((cards) =>
+      cards.map((c) =>
+        c.id === id
+          ? { ...c, status: 'dropped', lastTouchedAt: Date.now(), updatedAt: Date.now() }
+          : c
+      )
+    );
+  }
+
   return (
     <div className="screen">
       <div className="screen-title">Waiting</div>
@@ -44,6 +54,9 @@ export default function Waiting({ app }: { app: AppState }) {
                 </span>
                 <button className="btn" onClick={() => nudged(card.id)}>
                   Nudged
+                </button>
+                <button className="btn danger" onClick={() => drop(card.id)}>
+                  Drop
                 </button>
               </div>
             );

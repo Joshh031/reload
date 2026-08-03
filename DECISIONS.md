@@ -88,6 +88,17 @@ for. An app-lifetime scope could exhaust a small deck into a false empty state.
 - "Threads with zero completions in 14 days" counts active threads only —
   parked threads are excluded by definition (they are admitted-idle).
 
+## Demo data is now opt-in (?demo); touch affordances added
+
+Auto-seeding every fresh browser profile kept injecting demo cards on new
+devices (each PWA install has its own storage), which read as junk once the
+owner was in real use — and risked merging into the synced data. Seeding now
+runs only on a `?demo` visit. Two mobile gaps closed the same day: the
+empty state and the card view previously had no touch path back to the
+picker (keyboard-only Esc/digits), so the empty state now carries the
+minute and mode buttons, the card view a slim "N min · mode / change" bar;
+and Waiting rows gained a Drop button for deleting junk in place.
+
 ## Sync (schema v3) — user override of the v1 scope
 
 The brief excluded multi-device sync from v1; the owner overrode that after

@@ -1,6 +1,6 @@
 // RELOAD service worker. Network-first, falling back to cache.
 // Bump on every deploy that touches deployed files.
-const CACHE_VERSION = 'reload-v4';
+const CACHE_VERSION = 'reload-v5';
 
 // Replaced at build time by scripts/inject-sw.mjs with the hashed dist assets,
 // so the full app works offline from the very first visit.

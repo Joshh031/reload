@@ -5,7 +5,8 @@ import { migrate } from './lib/storage';
 import { maybeSeed } from './lib/seed';
 
 migrate();
-maybeSeed(new URLSearchParams(window.location.search).has('empty'));
+// Demo data is opt-in: only a ?demo visit seeds the sample threads/cards.
+maybeSeed(!new URLSearchParams(window.location.search).has('demo'));
 
 // No StrictMode: its dev-only double mount would double-fire the
 // abandoned-session instrumentation, making dev stats diverge from prod.

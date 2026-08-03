@@ -197,9 +197,29 @@ export default function Now({ app, mode, setMode, minutes, setMinutes, onEdit, h
     const next = MINUTES.find((m) => m > minutes);
     return (
       <div className="screen">
-        <div className="empty">
-          Nothing fits {minutes} minutes {PLACE_PHRASE[mode]}.{' '}
-          {next ? `Try ${next}, or capture something new.` : 'Capture something new.'}
+        <div className="picker">
+          <div className="empty" style={{ flex: 'none' }}>
+            Nothing fits {minutes} minutes {PLACE_PHRASE[mode]}.{' '}
+            {next ? `Try ${next}, or capture something new.` : 'Capture something new.'}
+          </div>
+          <div className="minutes mono">
+            {MINUTES.map((m) => (
+              <button
+                key={m}
+                className={m === minutes ? 'active' : ''}
+                onClick={() => setMinutes(m)}
+              >
+                {m}
+              </button>
+            ))}
+          </div>
+          <div className="modes">
+            {CONTEXT_PLACES.map((p) => (
+              <button key={p} className={p === mode ? 'active' : ''} onClick={() => setMode(p)}>
+                {PLACE_LABELS[p]}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -219,6 +239,12 @@ export default function Now({ app, mode, setMode, minutes, setMinutes, onEdit, h
   return (
     <div className="screen">
       <div className="card-wrap">
+        <div className="session-bar">
+          <span>
+            {minutes} min · {PLACE_LABELS[mode]}
+          </span>
+          <button onClick={toPicker}>change</button>
+        </div>
         <div
           className="card"
           style={{ borderLeftColor: thread ? `hsl(${thread.hue} 45% 55%)` : undefined }}
