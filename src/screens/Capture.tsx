@@ -35,6 +35,7 @@ export default function Capture({ app, editCard, onClose, onToast }: Props) {
     editCard?.deadline ? isoDate(editCard.deadline) : ''
   );
   const [waitingOn, setWaitingOn] = useState(editCard?.waitingOn ?? '');
+  const [recurs, setRecurs] = useState<'daily' | null>(editCard?.recurs ?? null);
   // Any manual touch of the structured fields makes them authoritative:
   // the NL parse call is skipped.
   const [touched, setTouched] = useState(false);
@@ -72,6 +73,7 @@ export default function Capture({ app, editCard, onClose, onToast }: Props) {
                 minutes,
                 place,
                 priority,
+                recurs,
                 deadline: deadlineMs(),
                 waitingOn: waitingOn.trim() || null,
                 waitingSince: waitingOn.trim()
@@ -98,6 +100,7 @@ export default function Capture({ app, editCard, onClose, onToast }: Props) {
       minutes,
       place,
       priority,
+      recurs,
       deadline: deadlineMs(),
       waitingOn: waitingOn.trim() || null,
       waitingSince: waitingOn.trim() ? now : null,
@@ -238,6 +241,23 @@ export default function Capture({ app, editCard, onClose, onToast }: Props) {
               }}
               placeholder="Names, the number, the link, where it left off."
             />
+          </div>
+          <div>
+            <label>Repeats</label>
+            <div className="seg">
+              <button
+                className={recurs === null ? 'active' : ''}
+                onClick={() => setRecurs(null)}
+              >
+                no
+              </button>
+              <button
+                className={recurs === 'daily' ? 'active' : ''}
+                onClick={() => setRecurs('daily')}
+              >
+                daily
+              </button>
+            </div>
           </div>
           <div style={{ display: 'flex', gap: 10 }}>
             <div style={{ flex: 1 }}>

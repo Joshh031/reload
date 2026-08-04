@@ -106,11 +106,14 @@ export default function Now({ app, mode, setMode, minutes, setMinutes, onEdit, h
     logOutcome('done');
     const now = Date.now();
     app.setCards((cards) =>
-      cards.map((c) =>
-        c.id === current.id
-          ? { ...c, status: 'done', lastTouchedAt: now, updatedAt: now }
-          : c
-      )
+      cards.map((c) => {
+        if (c.id !== current.id) return c;
+        // A daily is done for the day, not done: it self-snoozes to midnight
+        // and comes back tomorrow.
+        return c.recurs === 'daily'
+          ? { ...c, snoozeUntil: nextMidnight(1), lastTouchedAt: now, updatedAt: now }
+          : { ...c, status: 'done', lastTouchedAt: now, updatedAt: now };
+      })
     );
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (reduced) {
@@ -249,7 +252,10 @@ export default function Now({ app, mode, setMode, minutes, setMinutes, onEdit, h
           className="card"
           style={{ borderLeftColor: thread ? `hsl(${thread.hue} 45% 55%)` : undefined }}
         >
-          <div className="thread">{thread?.name ?? '—'}</div>
+          <div className="thread">
+            {thread?.name ?? '—'}
+            {current.recurs === 'daily' ? ' · daily' : ''}
+          </div>
           <div className="action">{current.action}</div>
           {current.reload && <div className="reload">{current.reload}</div>}
           {current.waitingOn && (

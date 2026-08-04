@@ -164,6 +164,7 @@ export default function Threads({ app }: { app: AppState }) {
             )}
             <div className="parse-note" style={{ marginBottom: 12 }}>
               {reviewCard.minutes} min · {reviewCard.place}
+              {reviewCard.recurs === 'daily' ? ' · daily' : ''}
               {reviewCard.priority ? ` · p${reviewCard.priority}` : ''}
               {reviewCard.waitingOn ? ` · waiting on ${reviewCard.waitingOn}` : ''}
             </div>

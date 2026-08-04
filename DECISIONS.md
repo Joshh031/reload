@@ -88,6 +88,17 @@ for. An app-lifetime scope could exhaust a small deck into a false empty state.
 - "Threads with zero completions in 14 days" counts active threads only —
   parked threads are excluded by definition (they are admitted-idle).
 
+## Dailies — the narrowest recurring task that could work
+
+The brief rejected recurring tasks; the owner asked for daily rituals
+(planks, stretching, reading) that reset each day. Implemented as a single
+optional card field `recurs: 'daily'`: completing such a card logs a normal
+done outcome and then self-snoozes to next local midnight instead of
+closing. No schedules, no streaks, no reminders, no other frequencies —
+the existing snooze filter is the entire mechanism. Fresh dailies carry no
+urgency signals, so they fill quiet minutes without outranking deadline or
+priority work.
+
 ## Demo data is now opt-in (?demo); touch affordances added
 
 Auto-seeding every fresh browser profile kept injecting demo cards on new

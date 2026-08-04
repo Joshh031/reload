@@ -40,6 +40,7 @@ function normalizeCard(c: Partial<Card>): Card {
     minutes: c.minutes ?? 5,
     place: c.place ?? 'anywhere',
     priority: c.priority ?? 0,
+    recurs: c.recurs ?? null,
     deadline: c.deadline ?? null,
     waitingOn: c.waitingOn ?? null,
     waitingSince: c.waitingSince ?? null,

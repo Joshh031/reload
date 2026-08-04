@@ -36,6 +36,9 @@ export interface Card {
   waitingOn: string | null;
   waitingSince: number | null;
   lastNudged: number | null;
+  // 'daily': completing logs a done and self-snoozes to next midnight, so the
+  // card resurfaces tomorrow instead of closing. Absent/null = one-shot.
+  recurs?: 'daily' | null;
   status: 'open' | 'done' | 'dropped';
   snoozeUntil: number | null;
   createdAt: number;
